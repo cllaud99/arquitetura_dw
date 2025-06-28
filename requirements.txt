@@ -1,0 +1,9 @@
+apache-airflow-providers-postgres==6.2.0
+apache-airflow-providers-common-sql==1.27.2
+apache-airflow-providers-apache-kafka==1.9.0
+
+astronomer-cosmos==1.10.1
+
+dbt-postgres==1.9.0
+confluent-kafka==2.10.0
+

@@ -1,0 +1,55 @@
+# Configs
+.env
+airflow.cfg
+.ssh
+.ssh.pub
+gitlab_ci_cd_key
+gitlab_ci_cd_key.pub
+venv
+.venv
+gitlab-runner
+
+# Airflow logs
+logs/
+*.log
+
+# Arquivos de PID ou sockets (quando usado localmente)
+airflow-webserver.pid
+airflow-scheduler.pid
+
+# Pastas e arquivos temporários
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.env
+.env.*
+
+# DB local (se estiver versionado por engano)
+airflow.db
+sqlite.db
+
+# Dags compiladas com Cosmos (se estiver usando)
+dbt_modules/
+dbt_packages/
+target/
+manifest.json
+catalog.json
+run_results.json
+
+# Docker
+*.tar
+*.img
+*.pid
+*.sock
+
+# VSCode / IDEs
+.vscode/
+.idea/
+
+# Arquivos de credenciais sensíveis (recomendado não subir)
+config/connections.json
+config/variables.json
+
+logs/
