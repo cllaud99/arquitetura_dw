@@ -1,10 +1,10 @@
 # scripts/ingestion/data_downloader.py
 
-import requests
+import os
 import zipfile
 from pathlib import Path
-import os
 
+import requests
 
 
 def download_file(url: str, destination_path: Path) -> Path:
@@ -31,7 +31,7 @@ def download_file(url: str, destination_path: Path) -> Path:
         # Garante que o diretório de destino exista
         destination_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(destination_path, 'wb') as f:
+        with open(destination_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
         print(f"Arquivo baixado com sucesso para: {destination_path}")
@@ -46,6 +46,7 @@ def download_file(url: str, destination_path: Path) -> Path:
         print(f"Ocorreu um erro inesperado durante o download: {e}")
         raise
 
+
 def extract_zip_file(zip_path: Path, destination_dir: Path) -> None:
     """
     Descompacta um arquivo ZIP em um diretório de destino.
@@ -58,17 +59,17 @@ def extract_zip_file(zip_path: Path, destination_dir: Path) -> None:
         zipfile.BadZipFile: Se o arquivo ZIP for inválido.
     """
     try:
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(destination_dir)
         print(f"Arquivo ZIP descompactado com sucesso para: {destination_dir}")
     except zipfile.BadZipFile as e:
         print(f"Erro ao descompactar o arquivo ZIP: {e}")
         raise
 
+
 # Para testes locais, fora do Airflow.
 if __name__ == "__main__":
 
-
-    zip_path = 'data/raw/acessos_banda_larga_fixa.zip'
-    destination_dir = 'data/processed'
+    zip_path = "data/raw/acessos_banda_larga_fixa.zip"
+    destination_dir = "data/processed"
     extract_zip_file(zip_path, destination_dir)

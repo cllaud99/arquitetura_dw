@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
+
 import pytz
+from airflow.operators.empty import EmptyOperator  # type: ignore
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 # Airflow
 from airflow.sdk import dag, task
-from airflow.operators.empty import EmptyOperator  # type: ignore
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+
 
 @dag(
     dag_id="test-con",
@@ -32,5 +34,6 @@ def main():
 
     executar = run_test()
     start >> executar >> end
+
 
 dag = main()

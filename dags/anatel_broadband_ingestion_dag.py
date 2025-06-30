@@ -1,24 +1,28 @@
+import os
 import sys
 import unicodedata
-import os
-import duckdb
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
-import pandas as pd
+import duckdb
 import numpy as np
+import pandas as pd
 import pytz
-from pandas.errors import OutOfBoundsDatetime
+from airflow.operators.empty import EmptyOperator  # type: ignore
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 # Airflow
 from airflow.sdk import dag, task
-from airflow.operators.empty import EmptyOperator  # type: ignore
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+from pandas.errors import OutOfBoundsDatetime
+
 from scripts.ingestion.data_downloader import download_file, extract_zip_file
-from scripts.preprocessing.duckdb_preprocessor import filter_files_by_year, export_files_to_parquet
+from scripts.preprocessing.duckdb_preprocessor import (
+    export_files_to_parquet,
+    filter_files_by_year,
+)
 
 # Garante que scripts/ está no sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # ===== CONFIGURAÇÕES GLOBAIS =====
 
@@ -92,7 +96,9 @@ def migration_anatel_dag():
         return str(target)
 
     @task()
-    def convert_to_parquet(source: str | list[str], output_subfolder: str, apply_filter: bool = False) -> str:
+    def convert_to_parquet(
+        source: str | list[str], output_subfolder: str, apply_filter: bool = False
+    ) -> str:
         """
         Converte arquivos CSV para o formato Parquet.
 
@@ -117,12 +123,13 @@ def migration_anatel_dag():
         output_folder.mkdir(parents=True, exist_ok=True)
         export_files_to_parquet(files, output_folder=output_folder)
         return str(output_folder)
-    
 
     @task()
-    def clear_table_and_load_parquet_to_postgres(parquet_folder: str, table_name: str) -> None:
+    def clear_table_and_load_parquet_to_postgres(
+        parquet_folder: str, table_name: str
+    ) -> None:
         """
-        Limpa a tabela de destino no PostgreSQL e carrega arquivos Parquet, 
+        Limpa a tabela de destino no PostgreSQL e carrega arquivos Parquet,
         aplicando normalização automática dos nomes das colunas.
 
         Args:
@@ -132,8 +139,8 @@ def migration_anatel_dag():
 
         def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
             def normalize_name(name: str) -> str:
-                nfkd = unicodedata.normalize('NFKD', name)
-                only_ascii = nfkd.encode('ASCII', 'ignore').decode('ASCII')
+                nfkd = unicodedata.normalize("NFKD", name)
+                only_ascii = nfkd.encode("ASCII", "ignore").decode("ASCII")
                 lower = only_ascii.lower()
                 no_spaces = lower.replace(" ", "_")
                 return no_spaces
@@ -166,7 +173,9 @@ def migration_anatel_dag():
                     target_fields=cols,
                     commit_every=150_000,
                 )
-                print(f"> Inseridos {len(rows)} registros do arquivo {parquet_file.name}")
+                print(
+                    f"> Inseridos {len(rows)} registros do arquivo {parquet_file.name}"
+                )
             except Exception as exc:
                 print(f"Erro ao inserir lote de {parquet_file.name}: {exc}")
                 for idx, row in enumerate(rows):
@@ -177,7 +186,9 @@ def migration_anatel_dag():
                             target_fields=cols,
                         )
                     except Exception as inner_exc:
-                        print(f"> ERRO NA LINHA {idx} DO ARQUIVO {parquet_file.name}: {inner_exc}")
+                        print(
+                            f"> ERRO NA LINHA {idx} DO ARQUIVO {parquet_file.name}: {inner_exc}"
+                        )
                         print(f"> Dados problemáticos: {row}")
                         raise inner_exc
 
@@ -204,15 +215,23 @@ def migration_anatel_dag():
         apply_filter=False,
     )
 
-    load_broadband_to_postgres = clear_table_and_load_parquet_to_postgres(broadband_parquets, table_name="raw_broadband")
-    load_smp_to_postgres = clear_table_and_load_parquet_to_postgres(smp_parquets, table_name="raw_smp")
+    load_broadband_to_postgres = clear_table_and_load_parquet_to_postgres(
+        broadband_parquets, table_name="raw_broadband"
+    )
+    load_smp_to_postgres = clear_table_and_load_parquet_to_postgres(
+        smp_parquets, table_name="raw_smp"
+    )
 
     # Definição das dependências
     start >> [broadband_zip, smp_zip]
-    broadband_zip >> broadband_extracted >> broadband_parquets >> load_broadband_to_postgres
+    (
+        broadband_zip
+        >> broadband_extracted
+        >> broadband_parquets
+        >> load_broadband_to_postgres
+    )
     smp_zip >> smp_extracted >> smp_parquets >> load_smp_to_postgres
     [load_broadband_to_postgres, load_smp_to_postgres] >> end
-
 
 
 # Instancia a DAG
