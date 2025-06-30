@@ -53,3 +53,4 @@ config/connections.json
 config/variables.json
 
 logs/
+data/

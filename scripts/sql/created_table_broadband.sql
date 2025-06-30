@@ -1,18 +1,29 @@
-CREATE TABLE IF NOT EXISTS raw_broadband (
-    "ano" INTEGER,
-    "mês" INTEGER,
-    "grupo Econômico" VARCHAR,
-    "empresa" VARCHAR,
-    "cnpj" CHAR(14),
-    "porte da prestadora" VARCHAR,
-    "uf" CHAR(2),
-    "município" VARCHAR,
-    "código ibge município" INTEGER,
-    "faixa de velocidade" VARCHAR,
-    "velocidade" DOUBLE PRECISION,
-    "vecnologia" VARCHAR,
-    "meio de acesso" VARCHAR,
-    "tipo de pessoa" VARCHAR,
-    "tipo de produto" VARCHAR,
-    "acessos" INTEGER
+CREATE TABLE IF NOT EXISTS raw_broadband_copy (
+    ano SMALLINT,
+    mes SMALLINT,
+    grupo_economico VARCHAR(30),
+    empresa VARCHAR(125),
+    cnpj CHAR(14),
+    porte_da_prestadora VARCHAR(15),
+    uf CHAR(2),
+    municipio VARCHAR(35),
+    codigo_ibge_municipio INTEGER,
+    faixa_de_velocidade VARCHAR(15),
+    velocidade DOUBLE PRECISION,
+    tecnologia VARCHAR(15),  -- Corrigido de "vecnologia"
+    meio_de_acesso VARCHAR(15),
+    tipo_de_pessoa VARCHAR(15),
+    tipo_de_produto VARCHAR(15),
+    acessos INTEGER
+);
+
+
+CREATE TABLE IF NOT EXISTS raw_smp_copy (
+    periodo VARCHAR(10),
+    operadora VARCHAR(5),
+    municipio VARCHAR(35),
+    uf CHAR(2),
+    codigo_ibge INTEGER,
+    tecnologia CHAR(2),
+    presenca VARCHAR(4)
 );
